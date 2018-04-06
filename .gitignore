@@ -1,2 +1,5 @@
 *.class
 *.log
+
+# Data dir
+data/
