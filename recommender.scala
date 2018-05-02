@@ -6,7 +6,8 @@ val sqlc = new org.apache.spark.sql.SQLContext(sc)
 import sqlc.implicits._ // Uses sqlc datatypes
 
 // Class Definitions:
-case class Movie(movieId: Int, title: String, genres: Seq[String])
+// case class Movie(movieId: Int, title: String, genres: Seq[String])
+case class Movie(movieId: Int, title: String) // drop the genres: not used in this recommender
 case class User(userId: Int, gender: String, age: Int, occupation: Int, zipcode: String)
 
 // Helper functions:
@@ -19,7 +20,7 @@ def isValidMovie(record: String) : Boolean = {
 def createMovie(record: String) : Movie = {
     val delimeter : String = "::"
     val values = record.split(delimeter)
-    Movie(values(0).toInt, values(1).toString, Seq(values(2)))
+    Movie(values(0).toInt, values(1).toString)
 }
 
 def isValidUser(record: String) : Boolean = {
@@ -34,21 +35,46 @@ def createUser(record: String) : User = {
     User(values(0).toInt, values(1).toString, values(2).toInt, values(3).toInt, values(4).toString)
 }
 
-// datafiles:
+def isValidRating(record: String) : Boolean = {
+    val delimeter : String = "::"
+    val values = record.split(delimeter)
+    values.length == 4
+}
+
+def createRating(record: String) : Rating = {
+    val delimeter : String = "::"
+    val values = record.split(delimeter)
+    Rating(values(0).toInt, values(1).toInt, values(2).toDouble) // we ignore the timeStamp as that is not a useful feature
+}
+
+// files and parameters:
 val ratingsfile = "/user/ma2510/movies_data/ratings.dat"
+val moviesfile = "/user/ma2510/movies_data/movies.dat"
+val splitSeed = 0L
 
-val data = sc.textFile(datafile)
+// data rdds
+val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating)
+val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie)
 
-val ratings = data
-    .map(record => record.split(","))
-    .map(record => Rating(user.toInt, item.toInt, rate.toDouble))
+// train-val-test split
+val splits = ratings.randomSplit(Array(0.8, 0.1, 0.1), splitSeed)
+val train = split(0)
+val validation = split(1)
+val test = split(2)
 
-val usersProducts = ratings
-    .map(record => Array(user, product)
+// for prediction
+// val validation_predict = validation.map {
+//     // case Rating
+// }
 
 // Model parameters
+val modelSeed = 10L
 val rank = 10
+val regularizationParameter = 0.1
 val iters = 10
+val error = 0
+val tolerance = 0.02
+
 val model = ALS.train(ratings, rank, iters, 0.01)
 
 // getting the predictions y_hat
