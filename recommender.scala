@@ -61,7 +61,7 @@ val splitSeed = 0L
 
 // data rdds
 val rawRatings = sc.textFile(ratingsfile)
-val filteredRatingsRec = rawRating.first()
+val filteredRatingsRec = rawRatings.first()
 val ratings = rawRatings.filter(record => record != filteredRatingsRec).filter(isValidRating).map(createRating)
 
 val rawMovies = sc.textFile(moviesfile)
