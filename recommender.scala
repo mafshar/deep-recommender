@@ -12,7 +12,7 @@ import sqlc.implicits._ // Uses sqlc datatypes
 case class Movie(movieId: Int, title: String) // drop the genres: not used in this recommender
 case class User(userId: Int, gender: String)
 
-// Helper functions:
+// Helper functions (if using smaller dataset, delimeter would be "::"):
 def isValidMovie(record: String) : Boolean = {
     val delimeter : String = ","
     val values = record.split(delimeter)
