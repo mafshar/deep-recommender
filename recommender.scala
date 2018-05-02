@@ -78,7 +78,7 @@ val modelSeed = 10L
 // ALS.train(ratings, rank, iterations, lambda, blocks, seed)
 val model = ALS.train(trainData, rank, iters, regularizationParameter, blocks, modelSeed)
 
-val predictions = model.predict(validationPredict).map {
+val predictions = model.predict(testPredict).map {
     case Rating(user, product, rate) => ((user, product), rate)
 }
 
