@@ -60,13 +60,13 @@ val modelfile = "/user/ma2510/recommender_models/recommendationModel"
 val splitSeed = 0L
 
 // data rdds
-val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating).cache
-val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie).cache
+val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating)
+val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie)
 
 // train-val-test split
 val splits = ratings.randomSplit(Array(0.8, 0.2), splitSeed)
-val trainData = splits(0).cache
-val testData = splits(1).cache
+val trainData = splits(0)
+val testData = splits(1)
 
 // for prediction
 val testPredict = testData.map {
@@ -106,4 +106,5 @@ val mae = ratesAndPreds.map {
     Math.abs(error)
 }.mean()
 
-model.save(sc, )
+// save model to file for later predictions:
+model.save(sc, modelfile)
