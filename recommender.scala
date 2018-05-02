@@ -50,8 +50,13 @@ def createRating(record: String) : Rating = {
 }
 
 // files and parameters:
-val ratingsfile = "/user/ma2510/movies_data/ratings.dat"
-val moviesfile = "/user/ma2510/movies_data/movies.dat"
+// val ratingsfile = "/user/ma2510/movies_data/ratings.dat"
+// val moviesfile = "/user/ma2510/movies_data/movies.dat"
+
+val ratingsfile = "/user/ma2510/movies_data_large/ratings.csv"
+val moviesfile = "/user/ma2510/movies_data_large/movies.csv"
+
+val modelfile = "/user/ma2510/recommender_models/recommendationModel"
 val splitSeed = 0L
 
 // data rdds
@@ -69,7 +74,7 @@ val testPredict = testData.map {
 }
 
 // Model parameters
-val rank = 10
+val rank = 15
 val iters = 20
 val regularizationParameter = 0.1 // lambda
 val blocks = -1 // autoconfigure parrellism
@@ -94,9 +99,11 @@ val mse = ratesAndPreds.map {
     error * error
 }.mean()
 
-// best mae:
+// best mae: 0.6342475189415628
 val mae = ratesAndPreds.map {
     case ((user, product), (r1, r2)) =>
     val error = (r1 - r2)
     Math.abs(error)
 }.mean()
+
+model.save(sc, )
