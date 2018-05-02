@@ -70,7 +70,7 @@ val testPredict = testData.map {
 
 // Model parameters
 val rank = 10
-val iters = 10
+val iters = 20
 val regularizationParameter = 0.1 // lambda
 val blocks = -1 // autoconfigure parrellism
 val modelSeed = 10L
