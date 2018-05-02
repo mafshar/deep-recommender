@@ -97,14 +97,18 @@ val ratesAndPreds = testData.map {
 }.join(predictions)
 
 // @NOTE: r1: test rating, r2: predicted rating
-// best mse: 0.6559886450815043
+// best mse:
+    // small dataset: 0.6559886450815043
+    // large dataset: 0.6452421631467037
 val mse = ratesAndPreds.map {
     case ((user, product), (r1, r2)) =>
     val error = (r1 - r2)
     error * error
 }.mean()
 
-// best mae: 0.6342475189415628
+// best mae:
+    // small dataset: 0.6342475189415628
+    // large datset: 0.62444593265524
 val mae = ratesAndPreds.map {
     case ((user, product), (r1, r2)) =>
     val error = (r1 - r2)
