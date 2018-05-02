@@ -55,13 +55,13 @@ val moviesfile = "/user/ma2510/movies_data/movies.dat"
 val splitSeed = 0L
 
 // data rdds
-val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating)
-val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie)
+val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating).cache
+val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie).cache
 
 // train-val-test split
 val splits = ratings.randomSplit(Array(0.8, 0.2), splitSeed)
-val trainData = splits(0)
-val testData = splits(1)
+val trainData = splits(0).cache
+val testData = splits(1).cache
 
 // for prediction
 val testPredict = testData.map {
@@ -86,9 +86,17 @@ val ratesAndPreds = testData.map {
     case Rating(user, product, rate) => ((user, product), rate)
 }.join(predictions)
 
-// best error: 0.6669886450815043
+// @NOTE: r1: test rating, r2: predicted rating
+// best mse: 0.6559886450815043
 val mse = ratesAndPreds.map {
     case ((user, product), (r1, r2)) =>
     val error = (r1 - r2)
     error * error
+}.mean()
+
+// best mae:
+val mae = ratesAndPreds.map {
+    case ((user, product), (r1, r2)) =>
+    val error = (r1 - r2)
+    Math.abs(error)
 }.mean()
