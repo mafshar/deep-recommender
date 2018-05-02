@@ -60,8 +60,13 @@ val modelfile = "/user/ma2510/recommender_models/recommendationModel"
 val splitSeed = 0L
 
 // data rdds
-val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating)
-val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie)
+val ratings = sc.textFile(ratingsfile)
+val filteredRatingsRec = rating.first()
+ratings = ratings.filter(record => record != filteredRatingsRec).filter(isValidRating).map(createRating)
+
+val movies = sc.textFile(moviesfile)
+val filteredMoviesRec = movies.first()
+movies.filter(record => record != filteredMoviesRec).filter(isValidMovie).map(createMovie)
 
 // train-val-test split
 val splits = ratings.randomSplit(Array(0.8, 0.2), splitSeed)
