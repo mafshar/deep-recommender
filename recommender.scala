@@ -61,11 +61,11 @@ val splitSeed = 0L
 
 // data rdds
 val rawRatings = sc.textFile(ratingsfile)
-val filteredRatingsRec = rawRatings.first()
+val filteredRatingsRec = rawRatings.first() // for larger dataset
 val ratings = rawRatings.filter(record => record != filteredRatingsRec).filter(isValidRating).map(createRating)
 
 val rawMovies = sc.textFile(moviesfile)
-val filteredMoviesRec = rawMovies.first()
+val filteredMoviesRec = rawMovies.first() // for larger dataset
 val movies = rawMovies.filter(record => record != filteredMoviesRec).filter(isValidMovie).map(createMovie)
 
 // train-val-test split
@@ -98,7 +98,7 @@ val ratesAndPreds = testData.map {
 
 // @NOTE: r1: test rating, r2: predicted rating
 // best mse:
-    // small dataset: 0.6559886450815043
+    // small dataset: 0.6659886450815043
     // large dataset: 0.6452421631467037
 val mse = ratesAndPreds.map {
     case ((user, product), (r1, r2)) =>
