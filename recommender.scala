@@ -1,14 +1,16 @@
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.spark.mllib.recommendation._ // Uses ALS to determine latent factors in the matrix; Uses Rating class
 import org.apache.spark.sql._ // Uses spark sql datatypes (needed for parsing)
 
-// SQL Context
+// SQL Context (OPTIONAL: for data exploration purposes)
 val sqlc = new org.apache.spark.sql.SQLContext(sc)
 import sqlc.implicits._ // Uses sqlc datatypes
 
 // Class Definitions:
 // case class Movie(movieId: Int, title: String, genres: Seq[String])
 case class Movie(movieId: Int, title: String) // drop the genres: not used in this recommender
-case class User(userId: Int, gender: String, age: Int, occupation: Int, zipcode: String)
+case class User(userId: Int, gender: String)
 
 // Helper functions:
 def isValidMovie(record: String) : Boolean = {
@@ -26,13 +28,13 @@ def createMovie(record: String) : Movie = {
 def isValidUser(record: String) : Boolean = {
     val delimeter : String = "::"
     val values = record.split(delimeter)
-    values.length == 5
+    values.length == 4
 }
 
 def createUser(record: String) : User = {
     val delimeter : String = "::"
     val values = record.split(delimeter)
-    User(values(0).toInt, values(1).toString, values(2).toInt, values(3).toInt, values(4).toString)
+    User(values(0).toInt, values(1).toString)
 }
 
 def isValidRating(record: String) : Boolean = {
@@ -57,36 +59,36 @@ val ratings = sc.textFile(ratingsfile).filter(isValidRating).map(createRating)
 val movies = sc.textFile(moviesfile).filter(isValidMovie).map(createMovie)
 
 // train-val-test split
-val splits = ratings.randomSplit(Array(0.8, 0.1, 0.1), splitSeed)
-val train = split(0)
-val validation = split(1)
-val test = split(2)
+val splits = ratings.randomSplit(Array(0.8, 0.2), splitSeed)
+val trainData = splits(0)
+val testData = splits(1)
 
 // for prediction
-// val validation_predict = validation.map {
-//     // case Rating
-// }
+val testPredict = testData.map {
+    case Rating(user, product, rate) => (user, product)
+}
 
 // Model parameters
-val modelSeed = 10L
 val rank = 10
-val regularizationParameter = 0.1
 val iters = 10
-val error = 0
-val tolerance = 0.02
+val regularizationParameter = 0.1 // lambda
+val blocks = -1 // autoconfigure parrellism
+val modelSeed = 10L
 
-val model = ALS.train(ratings, rank, iters, 0.01)
+// ALS.train(ratings, rank, iterations, lambda, blocks, seed)
+val model = ALS.train(trainData, rank, iters, regularizationParameter, blocks, modelSeed)
 
-// getting the predictions y_hat
-val predictions = model.predict(usersProducts)
-    .map(record => Array((record(0), record(1)), record(2))) // ((user, product), rate))
+val predictions = model.predict(validationPredict).map {
+    case Rating(user, product, rate) => ((user, product), rate)
+}
 
-// getting the ratings y and the predictions y_hat to calculate accuracy/precision/recall
-val ratingsAndPred = ratings
-    .map(record => Array((record(0), record(1)), record(2))) // ((user, product), rate))
-    .join(predictions)
+val ratesAndPreds = testData.map {
+    case Rating(user, product, rate) => ((user, product), rate)
+}.join(predictions)
 
-// NEXT STEPS:
-// calculate the precision and recall
-// use a metric to measure the understanding of the model and the accuracy/precision/recall
-// explore methods in deep learning in order to make a deep collaborative filtering model (autoencoders)
+// best error: 0.6669886450815043
+val mse = ratesAndPreds.map {
+    case ((user, product), (r1, r2)) =>
+    val error = (r1 - r2)
+    error * error
+}.mean()
