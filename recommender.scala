@@ -14,37 +14,37 @@ case class User(userId: Int, gender: String)
 
 // Helper functions:
 def isValidMovie(record: String) : Boolean = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     values.length == 3
 }
 
 def createMovie(record: String) : Movie = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     Movie(values(0).toInt, values(1).toString)
 }
 
 def isValidUser(record: String) : Boolean = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     values.length == 4
 }
 
 def createUser(record: String) : User = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     User(values(0).toInt, values(1).toString)
 }
 
 def isValidRating(record: String) : Boolean = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     values.length == 4
 }
 
 def createRating(record: String) : Rating = {
-    val delimeter : String = "::"
+    val delimeter : String = ","
     val values = record.split(delimeter)
     Rating(values(0).toInt, values(1).toInt, values(2).toDouble) // we ignore the timeStamp as that is not a useful feature
 }
